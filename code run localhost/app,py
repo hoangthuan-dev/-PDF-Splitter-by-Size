@@ -1,0 +1,82 @@
+import gradio as gr
+from PyPDF2 import PdfReader, PdfWriter
+import os
+import tempfile
+
+def split_pdf_by_size_gradio(pdf_file, max_size_mb):
+    output_files = []
+    with tempfile.TemporaryDirectory() as tmpdir:
+        input_path = os.path.join(tmpdir, "input.pdf")
+        
+        # Đọc nội dung file được upload
+        if isinstance(pdf_file, str):
+            with open(pdf_file, "rb") as src:
+                content = src.read()
+        else:
+            content = pdf_file.read() if hasattr(pdf_file, "read") else pdf_file
+
+        with open(input_path, "wb") as f:
+            f.write(content)
+
+        reader = PdfReader(input_path)
+        total_pages = len(reader.pages)
+        part = 1
+        page_start = 0
+
+        while page_start < total_pages:
+            temp_writer = PdfWriter()
+            temp_pages = []
+            page_end = page_start
+
+            while page_end < total_pages:
+                temp_pages.append(reader.pages[page_end])
+                temp_writer.add_page(reader.pages[page_end])
+
+                temp_path = os.path.join(tmpdir, "temp_test.pdf")
+                with open(temp_path, "wb") as temp_file:
+                    temp_writer.write(temp_file)
+
+                file_size_mb = os.path.getsize(temp_path) / (1024 * 1024)
+                if file_size_mb > max_size_mb:
+                    temp_pages.pop()
+                    break
+                page_end += 1
+
+            writer = PdfWriter()
+            for page in temp_pages:
+                writer.add_page(page)
+
+            output_path = os.path.join(tmpdir, f"part_{part}.pdf")
+            with open(output_path, "wb") as output_file:
+                writer.write(output_file)
+
+            output_files.append(output_path)
+            part += 1
+            page_start += len(temp_pages)
+
+        # Tạo bản copy các file để Gradio có thể truy cập sau khi tempdir bị xoá
+        final_output_paths = []
+        persist_dir = os.path.join(os.getcwd(), "output_files")
+        os.makedirs(persist_dir, exist_ok=True)
+        for path in output_files:
+            final_path = os.path.join(persist_dir, os.path.basename(path))
+            with open(path, "rb") as src, open(final_path, "wb") as dst:
+                dst.write(src.read())
+            final_output_paths.append(final_path)
+
+        return final_output_paths
+
+# Gradio UI
+with gr.Blocks() as demo:
+    gr.Markdown("## 📄 Tách PDF thành nhiều file dưới dung lượng giới hạn")
+
+    with gr.Row():
+        pdf_input = gr.File(label="Tải lên file PDF", file_types=[".pdf"])
+        size_input = gr.Slider(1, 50, value=10, label="Giới hạn dung lượng mỗi file (MB)")
+    
+    output = gr.File(label="Các phần đã tách", file_types=[".pdf"], file_count="multiple")
+
+    btn = gr.Button("🚀 Tách file PDF")
+    btn.click(fn=split_pdf_by_size_gradio, inputs=[pdf_input, size_input], outputs=output)
+
+demo.launch()
