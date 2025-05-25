@@ -14,13 +14,15 @@ pinned: false
 Tách một file PDF thành nhiều phần nhỏ hơn, với mỗi phần có dung lượng không vượt quá giới hạn do bạn chọn. Ứng dụng chạy trực tiếp trên nền tảng [Gradio](https://www.gradio.app/), dễ sử dụng và không cần cài đặt phần mềm phức tạp.
 
 ---
----
+
 
 ## 🚀 Dùng Thử Trực Tuyến
 
 👉 [Chạy ngay trên Hugging Face Spaces](https://huggingface.co/spaces/hoangthuandev/PDF-Splitter-by-Size)  
+
 ---
 ---
+
 ## 🚀 Tính năng nổi bật
 
 - 📁 Tải lên file PDF bất kỳ
