@@ -20,6 +20,7 @@ Tách một file PDF thành nhiều phần nhỏ hơn, với mỗi phần có du
 
 👉 [Chạy ngay trên Hugging Face Spaces](https://huggingface.co/spaces/hoangthuandev/PDF-Splitter-by-Size)  
 ---
+---
 ## 🚀 Tính năng nổi bật
 
 - 📁 Tải lên file PDF bất kỳ
